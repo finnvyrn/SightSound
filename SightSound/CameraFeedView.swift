@@ -24,10 +24,11 @@ struct CameraFeedView: View {
           #endif
       }
       .onAppear {
+          viewModel.configureCaptureSession()
           viewModel.startRunningCaptureSession()
       }
       .onDisappear {
-          viewModel.stopRunningCaptureSession()
+          viewModel.stopCaptureSession()
       }
   }
 }

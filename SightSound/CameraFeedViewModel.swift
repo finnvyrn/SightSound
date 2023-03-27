@@ -1,56 +1,59 @@
-import Vision
+import SwiftUI
 import AVFoundation
 
 class CameraFeedViewModel: NSObject, ObservableObject {
-  
-  private var requestHandler = VNSequenceRequestHandler()
-  @Published var previewLayer: AVCaptureVideoPreviewLayer?
-  
-  func startRunningCaptureSession() {
-      self.session.startRunning()
-  }
-
-  func stopRunningCaptureSession() {
-      self.session.stopRunning()
-  }
-  
-  func detectEyeLandmarks(sampleBuffer: CMSampleBuffer) {
-      guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-      
-      let detectFaceLandmarksRequest = VNDetectFaceLandmarksRequest { (request, error) in
-          if let error = error {
-            print("Failed to detect face landmarks: \(error.localizedDescription)")
+    @Published var previewLayer: AVCaptureVideoPreviewLayer?
+    private let session = AVCaptureSession()
+    private let videoOutput = AVCaptureVideoDataOutput()
+    private let queue = DispatchQueue(label: "com.ethan-quinn.SightSound.queue")
+    
+    func configureCaptureSession() {
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
+            print("Unable to access front camera")
             return
         }
-
-        guard let results = request.results as? [VNFaceObservation] else { return }
         
-        for faceObservation in results {
-            DispatchQueue.main.async {
-                self.handleFaceLandmarks(faceObservation)
+        do {
+            let input = try AVCaptureDeviceInput(device: camera)
+            
+            if session.canAddInput(input) {
+                session.addInput(input)
+            } else {
+                print("Failed to add input")
+                return
             }
+            
+            if session.canAddOutput(videoOutput) {
+                session.addOutput(videoOutput)
+                videoOutput.setSampleBufferDelegate(self, queue: queue)
+                videoOutput.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as String): NSNumber(value: kCVPixelFormatType_32BGRA)]
+            } else {
+                print("Failed to add output")
+                return
+            }
+            
+            let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+            previewLayer.videoGravity = .resizeAspectFill
+            self.previewLayer = previewLayer
+            session.startRunning()
+            
+        } catch {
+            print("Error configuring capture session: \(error)")
         }
     }
-
-    do {
-        try requestHandler.perform([detectFaceLandmarksRequest], on: pixelBuffer)
-    } catch {
-        print("Failed to perform request: \(error.localizedDescription)")
-    }
-  }
-  
-  func handleFaceLandmarks(_ faceObservation: VNFaceObservation) {
-    if let leftEye = faceObservation.landmarks?.leftEye {
-      print("Left eye landmarks: \(leftEye.normalizedPoints)")
-    }
     
-    if let rightEye = faceObservation.landmarks?.rightEye {
-      print("Right eye landmarks: \(rightEye.normalizedPoints)")
+    func startRunningCaptureSession() {
+      session.startRunning()
     }
-  }
-  
+
+    func stopCaptureSession() {
+      session.stopRunning()
+    }
+}
+
+extension CameraFeedViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-      detectEyeLandmarks(sampleBuffer: sampleBuffer)
+      // Add the code for processing the sample buffer here
   }
 }
 
