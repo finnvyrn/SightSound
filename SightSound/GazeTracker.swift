@@ -20,8 +20,10 @@ private func averagePoint(points: [CGPoint]) -> CGPoint {
     return CGPoint(x: sum.x / CGFloat(points.count), y: sum.y / CGFloat(points.count))
 }
 
+
 #if os(iOS)
-import UIKit
+//import UIKit
+import SwiftUI
 
 private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize) -> CGPoint {
     let screenWidth = UIScreen.main.bounds.size.width
@@ -35,10 +37,31 @@ private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize)
 
 func detectText(at gazePoint: CGPoint) {
     // Capture a screenshot of the current screen
-    guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
+  
+  
+  /*
+    //guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
+  
+  //guard let screenShot = UIApplication.shared.windows.first?.screen else {
+  guard let screenShot = UIApplication.UIWindowScene.windows.first? else {
+  
       print("Failed to capture a screenshot.")
       return
   }
+   */
+  
+  
+  let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
+  let screenShot = renderer.image { context in
+      guard let window = UIApplication.shared.windows.first else {
+          // handle error if window is nil
+          return
+      }
+      window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+  }
+
+  // Get the size of the image
+  let screenShotSize = screenShot.size
   
   // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
   let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
@@ -71,6 +94,7 @@ func detectText(at gazePoint: CGPoint) {
 }
 #endif
 
+
 private func handleDetectedFace(request: VNRequest, error: Error?) {
   guard let results = request.results as? [VNFaceObservation] else {
     print("No face detected.")
@@ -89,13 +113,10 @@ private func handleDetectedFace(request: VNRequest, error: Error?) {
 
   let imageSize = CGSize(width: face.boundingBox.width, height: face.boundingBox.height)
   let gazePointInScreen = gazePointInScreenCoordinates(gazePoint: gazePoint, imageSize: imageSize)
-
-  print("Gaze point in screen coordinates: \(gazePointInScreen)")
-  
-  let gazePointInScreen = gazePointInScreenCoordinates(gazePoint: gazePoint, imageSize: imageSize)
   
   print("Gaze point in screen coordinates: \(gazePointInScreen)")
 
   // Detect and read text at the gaze point
   detectText(at: gazePointInScreen)
 }
+
