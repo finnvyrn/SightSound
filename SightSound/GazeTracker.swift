@@ -4,108 +4,148 @@ import Vision
 
 #if os(iOS)
   import UIKit
+  import ARKit
 #elseif os(macOS)
   import AppKit
 #endif
 
-private func gazePoint(fromEyeLandmarks landmarks: VNFaceLandmarks2D) -> CGPoint? {
-  guard let leftEye = landmarks.leftEye, let rightEye = landmarks.rightEye else { return nil }
+class GazeTracker: NSObject {
 
-  let leftEyeCenter = averagePoint(points: leftEye.normalizedPoints)
-  let rightEyeCenter = averagePoint(points: rightEye.normalizedPoints)
+  #if os(iOS)
+    private let sceneView = ARSCNView()
+  #endif
 
-  let gazeDirection = CGPoint(
-    x: (leftEyeCenter.x + rightEyeCenter.x) / 2.0,
-    y: (leftEyeCenter.y + rightEyeCenter.y) / 2.0)
+  override init() {
+    super.init()
 
-  return gazeDirection
-}
+    #if os(iOS)
+      // Set up scene view
+      sceneView.delegate = self
+      sceneView.session.delegate = self
+      sceneView.showsStatistics = true
 
-private func averagePoint(points: [CGPoint]) -> CGPoint {
-  let sum = points.reduce(CGPoint.zero) { (result, point) -> CGPoint in
-    return CGPoint(x: result.x + point.x, y: result.y + point.y)
+    // ... (rest of the init code)
+    #endif
   }
 
-  return CGPoint(x: sum.x / CGFloat(points.count), y: sum.y / CGFloat(points.count))
-}
+  private func gazePoint(fromEyeLandmarks landmarks: VNFaceLandmarks2D) -> CGPoint? {
+    guard let leftEye = landmarks.leftEye, let rightEye = landmarks.rightEye else { return nil }
 
-private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize) -> CGPoint {
-  let screenSize = getScreenSize()
-  let screenWidth = screenSize.width
-  let screenHeight = screenSize.height
+    let leftEyeCenter = averagePoint(points: leftEye.normalizedPoints)
+    let rightEyeCenter = averagePoint(points: rightEye.normalizedPoints)
 
-  let gazeX = gazePoint.x * screenWidth
-  let gazeY = screenHeight - gazePoint.y * screenHeight
+    let gazeDirection = CGPoint(
+      x: (leftEyeCenter.x + rightEyeCenter.x) / 2.0,
+      y: (leftEyeCenter.y + rightEyeCenter.y) / 2.0)
 
-  return CGPoint(x: gazeX, y: gazeY)
-}
-
-private func handleDetectedFace(request: VNRequest, error: Error?) {
-  guard let results = request.results as? [VNFaceObservation] else {
-    print("No face detected.")
-    return
+    return gazeDirection
   }
 
-  guard let face = results.first, let landmarks = face.landmarks else {
-    print("No face landmarks detected.")
-    return
+  private func averagePoint(points: [CGPoint]) -> CGPoint {
+    let sum = points.reduce(CGPoint.zero) { (result, point) -> CGPoint in
+      return CGPoint(x: result.x + point.x, y: result.y + point.y)
+    }
+
+    return CGPoint(x: sum.x / CGFloat(points.count), y: sum.y / CGFloat(points.count))
   }
 
-  guard let gazePoint = gazePoint(fromEyeLandmarks: landmarks) else {
-    print("Failed to calculate gaze point.")
-    return
+  private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize) -> CGPoint {
+    let screenSize = getScreenSize()
+    let screenWidth = screenSize.width
+    let screenHeight = screenSize.height
+
+    let gazeX = gazePoint.x * screenWidth
+    let gazeY = screenHeight - gazePoint.y * screenHeight
+
+    return CGPoint(x: gazeX, y: gazeY)
   }
 
-  let imageSize = CGSize(width: face.boundingBox.width, height: face.boundingBox.height)
-  let gazePointInScreen = gazePointInScreenCoordinates(gazePoint: gazePoint, imageSize: imageSize)
-
-  print("Gaze point in screen coordinates: \(gazePointInScreen)")
-
-  // Detect and read text at the gaze point
-  detectText(at: gazePointInScreen)
-}
-
-func detectText(at gazePoint: CGPoint) {
-  // Capture a screenshot of the current screen
-
-  guard let screenShot = captureScreenshot() else {
-    print("Failed to capture a screenshot.")
-    return
-  }
-
-  // Convert the NSImage to a CGImage
-  guard let cgImage = captureScreenshot() else {
-    print("Failed to capture a screenshot.")
-    return
-  }
-
-  // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
-  let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
-    guard let results = request.results as? [VNTextObservation] else {
-      print("No text detected.")
+  private func handleDetectedFace(request: VNRequest, error: Error?) {
+    guard let results = request.results as? [VNFaceObservation] else {
+      print("No face detected.")
       return
     }
 
-    let distanceThreshold: CGFloat = 50.0  // Adjust this value to control the text detection sensitivity
+    guard let face = results.first, let landmarks = face.landmarks else {
+      print("No face landmarks detected.")
+      return
+    }
 
-    for textObservation in results {
-      let boundingBox = textObservation.boundingBox
-      let textCenter = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
+    guard let gazePoint = gazePoint(fromEyeLandmarks: landmarks) else {
+      print("Failed to calculate gaze point.")
+      return
+    }
 
-      // Check if the gaze point is close enough to the text center
-      if abs(gazePoint.x - textCenter.x) <= distanceThreshold
-        && abs(gazePoint.y - textCenter.y) <= distanceThreshold
-      {
-        // Speak the detected text
-        print("Text detected at gaze point: \(textObservation)")
+    let imageSize = CGSize(width: face.boundingBox.width, height: face.boundingBox.height)
+    let gazePointInScreen = gazePointInScreenCoordinates(gazePoint: gazePoint, imageSize: imageSize)
 
-        // Replace this example text with the actual text you want to speak
-        let exampleText = "Detected text at gaze point."
-        SpeechSynthesizer.shared.speakText(exampleText)
+    print("Gaze point in screen coordinates: \(gazePointInScreen)")
+
+    // Detect and read text at the gaze point
+    detectText(at: gazePointInScreen)
+  }
+
+  func detectText(at gazePoint: CGPoint) {
+    // Capture a screenshot of the current screen
+
+    guard let screenShot = captureScreenshot() else {
+      print("Failed to capture a screenshot.")
+      return
+    }
+
+    // Convert the NSImage to a CGImage
+    guard let cgImage = captureScreenshot() else {
+      print("Failed to capture a screenshot.")
+      return
+    }
+
+    // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
+    let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
+      guard let results = request.results as? [VNTextObservation] else {
+        print("No text detected.")
+        return
+      }
+
+      let distanceThreshold: CGFloat = 50.0  // Adjust this value to control the text detection sensitivity
+
+      for textObservation in results {
+        let boundingBox = textObservation.boundingBox
+        let textCenter = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
+
+        // Check if the gaze point is close enough to the text center
+        if abs(gazePoint.x - textCenter.x) <= distanceThreshold
+          && abs(gazePoint.y - textCenter.y) <= distanceThreshold
+        {
+          // Speak the detected text
+          print("Text detected at gaze point: \(textObservation)")
+
+          // Replace this example text with the actual text you want to speak
+          let exampleText = "Detected text at gaze point."
+          SpeechSynthesizer.shared.speakText(exampleText)
+        }
       }
     }
   }
+
+  func handleGazeTracking(with frame: ARFrame) {
+    // Extract gaze points and perform necessary gaze tracking logic
+    // ...
+  }
 }
+
+#if os(iOS)
+  extension GazeTracker: ARSCNViewDelegate {
+    // ARSCNViewDelegate methods
+  }
+
+  extension GazeTracker: ARSessionDelegate {
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+      DispatchQueue.main.async {
+        self.handleGazeTracking(with: frame)
+      }
+    }
+  }
+#endif
 
 func getScreenSize() -> CGSize {
   #if os(macOS)
