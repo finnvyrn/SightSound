@@ -95,7 +95,7 @@ class GazeTracker: NSObject, ObservableObject {
       #endif
 
       // Get the size of the image
-      //let screenShotSize = screenShot.size
+      let screenShotSize = screenShot.size
 
       // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
       let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
@@ -144,10 +144,7 @@ class GazeTracker: NSObject, ObservableObject {
     guard let screenImage = captureScreen() else { return }
 
     // Convert the NSImage to a CIImage
-    guard
-      let ciImage = CIImage(
-        cgImage: screenImage.cgImage(forProposedRect: nil, context: nil, hints: nil)!)
-    else { return }
+    guard let ciImage = nsImageToCIImage(nsImage: screenImage) else { return }
 
     // Create a Vision request handler
     let requestHandler = VNImageRequestHandler(ciImage: ciImage, options: [:])
@@ -160,8 +157,7 @@ class GazeTracker: NSObject, ObservableObject {
 
       // Handle detected faces
       for faceObservation in observations {
-        let faceBoundingBox = self.boundingBox(
-          for: faceObservation.boundingBox, in: screenImage)
+        let faceBoundingBox = self.boundingBox(for: faceObservation, containerSize: imageSize)
         let faceImage = strongSelf.cropImage(screenImage, to: faceBoundingBox)
         strongSelf.handleDetectedText(in: faceImage)
       }
@@ -173,6 +169,27 @@ class GazeTracker: NSObject, ObservableObject {
     } catch {
       print("Error performing face detection request: \(error)")
     }
+  }
+
+  func boundingBox(for faceObservation: VNFaceObservation, containerSize: CGSize) -> CGRect {
+    let x = faceObservation.boundingBox.origin.x * containerSize.width
+    let y =
+      (1 - faceObservation.boundingBox.origin.y - faceObservation.boundingBox.height)
+      * containerSize.height
+    let width = faceObservation.boundingBox.width * containerSize.width
+    let height = faceObservation.boundingBox.height * containerSize.height
+
+    return CGRect(x: x, y: y, width: width, height: height)
+  }
+
+  func nsImageToCIImage(nsImage: NSImage) -> CIImage? {
+    guard let tiffData = nsImage.tiffRepresentation,
+      let imageRep = NSBitmapImageRep(data: tiffData),
+      let cgImage = imageRep.cgImage
+    else {
+      return nil
+    }
+    return CIImage(cgImage: cgImage)
   }
 
   // --------------------------------------------------------------------- //
