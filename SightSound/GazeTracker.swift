@@ -139,12 +139,12 @@ class GazeTracker: NSObject, ObservableObject {
     }
   }
 
-  func handleDetectedFace() {
+  func handleDetectedFace(_ faceObservations: [VNFaceObservation], in ciImage: CIImage) {
     // Capture the screen
     guard let screenImage = captureScreen() else { return }
 
     // Convert the NSImage to a CIImage
-    guard let ciImage = nsImageToCIImage(nsImage: screenImage) else { return }
+    guard let ciImage = nsImageToCIImage(nsImage: ciImage) else { return }
 
     // Create a Vision request handler
     let requestHandler = VNImageRequestHandler(ciImage: ciImage, options: [:])
@@ -157,7 +157,8 @@ class GazeTracker: NSObject, ObservableObject {
 
       // Handle detected faces
       for faceObservation in observations {
-        let faceBoundingBox = self.boundingBox(for: faceObservation, containerSize: imageSize)
+        let faceBoundingBox = self.boundingBox(
+          for: faceObservation, containerSize: ciImage.extent.size)
         let faceImage = strongSelf.cropImage(screenImage, to: faceBoundingBox)
         strongSelf.handleDetectedText(in: faceImage)
       }
