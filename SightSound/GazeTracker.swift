@@ -138,20 +138,109 @@ class GazeTracker: NSObject, ObservableObject {
     // Detect and read text at the gaze point
     detectText(at: gazePointInScreen)
   }
+  
+  // --------------------------------------------------------------------- //
+  
+  @Published var gazePointInScreen = CGPoint(x: 0, y: 0)
+  
+  var captureSession: AVCaptureSession?
+  var videoDataOutput: AVCaptureVideoDataOutput?
+  
+  func startCapture() {
+      // Create an AVCaptureSession
+      let session = AVCaptureSession()
+      
+      // Set the session's sessionPreset to high to capture high-quality video
+      session.sessionPreset = .high
+      
+      // Get the default video device
+      guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
+          fatalError("Unable to access front camera")
+      }
+      
+      // Create an AVCaptureDeviceInput with the video device
+      guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {
+          fatalError("Unable to create AVCaptureDeviceInput")
+      }
+      
+      // Add the input to the session
+      if session.canAddInput(videoDeviceInput) {
+          session.addInput(videoDeviceInput)
+      }
+      
+      // Create an AVCaptureVideoDataOutput to capture video frames
+      let videoDataOutput = AVCaptureVideoDataOutput()
+      videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA)]
+      videoDataOutput.alwaysDiscardsLateVideoFrames = true
+      
+      // Create a dispatch queue to handle the video frames
+      let videoDataOutputQueue = DispatchQueue(label: "VideoDataOutputQueue")
+      videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
+      
+      // Add the output to the session
+      if session.canAddOutput(videoDataOutput) {
+          session.addOutput(videoDataOutput)
+      }
+      
+      // Save the session and videoDataOutput properties
+      self.captureSession = session
+      self.videoDataOutput = videoDataOutput
+      
+      // Start the session
+      session.startRunning()
+  }
 }
 
 
+extension GazeTracker: AVCaptureVideoDataOutputSampleBufferDelegate {
+  func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    // Convert the sample buffer to a CIImage
+    guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+      return
+    }
+    let ciImage = CIImage(cvImageBuffer: imageBuffer)
+    
+    // Determine the orientation of the video frames
+    var orientation: CGImagePropertyOrientation
+    switch connection.videoOrientation {
+      case .portrait:
+        orientation = .right
+      case .portraitUpsideDown:
+        orientation = .left
+      case .landscapeLeft:
+        orientation = .up
+      case .landscapeRight:
+        orientation = .down
+      default:
+        orientation = .up
+    }
+    
+    // Create a VNImageRequestHandler with the CIImage
+    let detectFaceRequest = VNDetectFaceLandmarksRequest(completionHandler: handleDetectedFace)
+    let detectFaceRequestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: orientation, options: [:])
+    
+    // Perform the face detection
+    do {
+      try detectFaceRequestHandler.perform([detectFaceRequest])
+    } catch {
+      print("Unable to perform face detection: \(error.localizedDescription)")
+    }
+  }
+}
+      
+      
 
+#if os(iOS)
 struct CameraPreview: UIViewRepresentable {
     @ObservedObject var gazeTracker: GazeTracker
     
     func makeUIView(context: Context) -> UIView {
         // Create the AVCaptureVideoPreviewLayer
-        let previewLayer = AVCaptureVideoPreviewLayer(session: gazeTracker.captureSession)
-        previewLayer.videoGravity = .resizeAspectFill
+        let previewLayer = AVCaptureVideoPreviewLayer(session: gazeTracker.captureSession!)
+        previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         
         // Create a UIView to contain the preview layer
-        let previewView = UIView(frame: CGRect(x: 0, y: 0, width: screenWidth, height: screenHeight))
+        let previewView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         previewView.layer.addSublayer(previewLayer)
         
         return previewView
@@ -162,6 +251,25 @@ struct CameraPreview: UIViewRepresentable {
         gazeTracker.startCapture()
     }
 }
-
-
-
+#elseif os(macOS)
+struct CameraPreview: NSViewRepresentable {
+    @ObservedObject var gazeTracker: GazeTracker
+    
+    func makeNSView(context: Context) -> NSView {
+        // Create the AVCaptureVideoPreviewLayer
+      let previewLayer = AVCaptureVideoPreviewLayer(sessionWithNoConnection: gazeTracker.captureSession!)
+        previewLayer.videoGravity = .resizeAspectFill
+        
+        // Create an NSView to contain the preview layer
+        let previewView = NSView(frame: CGRect(x: 0, y: 0, width: NSScreen.main?.frame.width ?? 0, height: NSScreen.main?.frame.height ?? 0))
+        previewView.layer?.addSublayer(previewLayer)
+        
+        return previewView
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+        // Start capturing the video and tracking the user's gaze
+        gazeTracker.startCapture()
+    }
+}
+#endif

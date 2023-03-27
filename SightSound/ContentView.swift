@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct ContentView: View {
+  
+  @ObservedObject var gazeTracker = GazeTracker()
+
+  
   var body: some View {
     /*
      VStack {
@@ -20,10 +24,15 @@ struct ContentView: View {
     #endif
      */
     
+    /*
     Text("Eye Gaze Detection")
         .font(.largeTitle)
         .padding()
     CameraFeedView()
+     */
+    
+  
+    CameraPreview(gazeTracker: gazeTracker)
   }
 }
 
