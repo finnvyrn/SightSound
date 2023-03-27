@@ -1,4 +1,5 @@
 import AVFoundation
+import SpeechSynthesizer
 import SwiftUI
 import Vision
 
@@ -127,13 +128,14 @@ class GazeTracker: NSObject {
     }
   }
 
-  func handleGazeTracking(with frame: ARFrame) {
-    // Extract gaze points and perform necessary gaze tracking logic
-    // ...
-  }
-  
-}
+  #if os(iOS)
+    func handleGazeTracking(with frame: ARFrame) {
+      // Extract gaze points and perform necessary gaze tracking logic
+      // ...
+    }
+  #endif
 
+}
 
 // GPT-4 Starts
 
