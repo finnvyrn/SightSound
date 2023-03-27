@@ -58,7 +58,6 @@ func detectText(at gazePoint: CGPoint) {
   }
    */
   
-  
     #if os(iOS)
       let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
       let screenShot = renderer.image { context in
@@ -80,10 +79,8 @@ func detectText(at gazePoint: CGPoint) {
       NSGraphicsContext.restoreGraphicsState()
     #endif
 
-  
-
   // Get the size of the image
-  let screenShotSize = screenShot.size
+  //let screenShotSize = screenShot.size
   
   // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
   let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
