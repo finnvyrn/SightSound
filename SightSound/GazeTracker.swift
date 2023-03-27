@@ -118,12 +118,14 @@ func detectText(at gazePoint: CGPoint) {
   }
 }
 
-extension NSWindow {
-  func snapshot() -> NSImage? {
-    guard let contentView = contentView else { return nil }
-    let bounds = contentView.bounds
-    let bitmapRep = contentView.bitmapImageRepForCachingDisplay(in: bounds)
-    contentView.cacheDisplay(in: bounds, to: bitmapRep!)
-    return NSImage(cgImage: bitmapRep!.cgImage!, size: bounds.size)
+#if os(macOS)
+  extension NSWindow {
+    func snapshot() -> NSImage? {
+      guard let contentView = contentView else { return nil }
+      let bounds = contentView.bounds
+      let bitmapRep = contentView.bitmapImageRepForCachingDisplay(in: bounds)
+      contentView.cacheDisplay(in: bounds, to: bitmapRep!)
+      return NSImage(cgImage: bitmapRep!.cgImage!, size: bounds.size)
+    }
   }
-}
+#endif
