@@ -47,72 +47,93 @@ class GazeTracker: NSObject, ObservableObject {
   }
   
   func detectText(at gazePoint: CGPoint) {
-    // Capture a screenshot of the current screen
-    
-    /*
-     //guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
-     
-     //guard let screenShot = UIApplication.shared.windows.first?.screen else {
-     guard let screenShot = UIApplication.UIWindowScene.windows.first? else {
-     
-     print("Failed to capture a screenshot.")
-     return
-     }
-     */
-    
-#if os(iOS)
-    let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
-    let screenShot = renderer.image { context in
-      guard let window = UIApplication.shared.windows.first else {
-        // handle error if window is nil
-        return
-      }
-      window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
-    }
-#elseif os(macOS)
-    let screenRect = NSScreen.main?.frame ?? CGRect.zero
-    let bitmapRep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(screenRect.size.width), pixelsHigh: Int(screenRect.size.height), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0)!
-    let graphicsContext = NSGraphicsContext(bitmapImageRep: bitmapRep)
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = graphicsContext
-    NSApp.keyWindow?.contentView?.display(screenRect)
-    let screenShot = NSImage(size: screenRect.size)
-    screenShot.addRepresentation(bitmapRep)
-    NSGraphicsContext.restoreGraphicsState()
-#endif
-    
-    // Get the size of the image
-    //let screenShotSize = screenShot.size
-    
-    // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
-    let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
-      guard let results = request.results as? [VNTextObservation] else {
-        print("No text detected.")
-        return
+      // Capture a screenshot of the current screen
+      guard let screenShot = captureScreen() else {
+          print("Failed to capture a screenshot.")
+          return
       }
       
-      for textObservation in results {
-        let boundingBox = textObservation.boundingBox
-        let textCenter = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
+      // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
+      let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
+          // ... (previous code)
         
-        let distanceThreshold: CGFloat = 50.0 // Adjust this value to control the text detection sensitivity
+        // Capture a screenshot of the current screen
         
-        // Check if the gaze point is close enough to the text center
-        if abs(gazePoint.x - textCenter.x) <= distanceThreshold && abs(gazePoint.y - textCenter.y) <= distanceThreshold {
-          // Speak the detected text
-          print("Text detected at gaze point: \(textObservation)")
+        /*
+         //guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
+         
+         //guard let screenShot = UIApplication.shared.windows.first?.screen else {
+         guard let screenShot = UIApplication.UIWindowScene.windows.first? else {
+         
+         print("Failed to capture a screenshot.")
+         return
+         }
+         */
+        
+    #if os(iOS)
+        let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
+        let screenShot = renderer.image { context in
+          guard let window = UIApplication.shared.windows.first else {
+            // handle error if window is nil
+            return
+          }
+          window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
         }
+    #elseif os(macOS)
+        let screenRect = NSScreen.main?.frame ?? CGRect.zero
+        let bitmapRep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(screenRect.size.width), pixelsHigh: Int(screenRect.size.height), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+        let graphicsContext = NSGraphicsContext(bitmapImageRep: bitmapRep)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = graphicsContext
+        NSApp.keyWindow?.contentView?.display(screenRect)
+        let screenShot = NSImage(size: screenRect.size)
+        screenShot.addRepresentation(bitmapRep)
+        NSGraphicsContext.restoreGraphicsState()
+    #endif
+        
+        // Get the size of the image
+        //let screenShotSize = screenShot.size
+        
+        // Create a VNDetectTextRectanglesRequest to detect text in the screenshot
+        let textDetectionRequest = VNDetectTextRectanglesRequest { (request, error) in
+          guard let results = request.results as? [VNTextObservation] else {
+            print("No text detected.")
+            return
+          }
+          
+          for textObservation in results {
+            let boundingBox = textObservation.boundingBox
+            let textCenter = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
+            
+            let distanceThreshold: CGFloat = 50.0 // Adjust this value to control the text detection sensitivity
+            
+            // Check if the gaze point is close enough to the text center
+            if abs(gazePoint.x - textCenter.x) <= distanceThreshold && abs(gazePoint.y - textCenter.y) <= distanceThreshold {
+              // Speak the detected text
+              print("Text detected at gaze point: \(textObservation)")
+            }
+          }
+        }
+        
+        let handler = VNImageRequestHandler(cgImage: screenShot.cgImage as! CGImage, options: [:])
+        
+        do {
+          try handler.perform([textDetectionRequest])
+        } catch {
+          print("Failed to perform text detection: (error)")
+        }
+        
       }
-    }
-    
-    let handler = VNImageRequestHandler(cgImage: screenShot.cgImage as! CGImage, options: [:])
-    
-    do {
-      try handler.perform([textDetectionRequest])
-    } catch {
-      print("Failed to perform text detection: (error)")
-    }
+      
+      let handler = VNImageRequestHandler(cgImage: screenShot, options: [:])
+      
+      do {
+          try handler.perform([textDetectionRequest])
+      } catch {
+          print("Failed to perform text detection: \(error)")
+      }
   }
+
   
   func handleDetectedFace(request: VNRequest, error: Error?) {
       // Get the first detected face
