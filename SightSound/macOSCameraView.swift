@@ -1,6 +1,5 @@
 #if os(macOS)
   import SwiftUI
-  import AVFoundation
 
   struct macOSCameraView: NSViewRepresentable {
     typealias NSViewType = NSView

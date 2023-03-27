@@ -124,8 +124,8 @@
 				635C4DC929D0EC9F00BEBD5B /* ContentView.swift */,
 				6353920D29D187D000EF9AD4 /* SpeechSynthesizer.swift */,
 				6353920F29D1971E00EF9AD4 /* iOSEyeTrackingViewController.swift */,
-				63EA3F8429D19DFC007C30EA /* iOSCameraHandler.swift */,
 				63EA3F8629D19F55007C30EA /* IOSCameraView.swift */,
+				63EA3F8429D19DFC007C30EA /* iOSCameraHandler.swift */,
 				63EA3F8A29D1A184007C30EA /* macOSCameraView.swift */,
 				63EA3F8C29D1A1CB007C30EA /* macOSCameraHandler.swift */,
 			);
@@ -476,7 +476,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.guang.SightSound;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -516,7 +516,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.guang.SightSound;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
+				SDKROOT = macosx;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

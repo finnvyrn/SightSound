@@ -1,6 +1,5 @@
 #if os(iOS)
   import SwiftUI
-  import UIKit
 
   struct iOSCameraView: UIViewControllerRepresentable {
     typealias UIViewControllerType = iOSCameraViewController
