@@ -3,6 +3,8 @@ import AVFAudio
 class SpeechSynthesizer: NSObject, AVSpeechSynthesizerDelegate {
   let synthesizer = AVSpeechSynthesizer()
 
+  static let shared = SpeechSynthesizer()
+
   override init() {
     super.init()
     synthesizer.delegate = self

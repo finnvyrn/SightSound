@@ -23,7 +23,6 @@
 		63EA3F8B29D1A184007C30EA /* macOSCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EA3F8A29D1A184007C30EA /* macOSCameraView.swift */; };
 		63EA3F8D29D1A1CB007C30EA /* macOSCameraHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EA3F8C29D1A1CB007C30EA /* macOSCameraHandler.swift */; };
 		63EAE00329D2101E001866C2 /* GazeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EAE00229D2101E001866C2 /* GazeTracker.swift */; };
-		63EAE00529D2286C001866C2 /* ScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EAE00429D2286C001866C2 /* ScreenCapture.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,7 +63,6 @@
 		63EA3F8A29D1A184007C30EA /* macOSCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOSCameraView.swift; sourceTree = "<group>"; };
 		63EA3F8C29D1A1CB007C30EA /* macOSCameraHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = macOSCameraHandler.swift; sourceTree = "<group>"; };
 		63EAE00229D2101E001866C2 /* GazeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GazeTracker.swift; sourceTree = "<group>"; };
-		63EAE00429D2286C001866C2 /* ScreenCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapture.swift; sourceTree = "<group>"; };
 		63FDB73E29D1A91E00D4E4A6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -139,7 +137,6 @@
 				6355DDBC29D200F7004B1DF0 /* CameraFeedViewModel.swift */,
 				6355DDBE29D204B0004B1DF0 /* CameraFeedView.swift */,
 				63EAE00229D2101E001866C2 /* GazeTracker.swift */,
-				63EAE00429D2286C001866C2 /* ScreenCapture.swift */,
 			);
 			path = SightSound;
 			sourceTree = "<group>";
@@ -309,7 +306,6 @@
 				635C4DC829D0EC9F00BEBD5B /* SightSoundApp.swift in Sources */,
 				6355DDBF29D204B0004B1DF0 /* CameraFeedView.swift in Sources */,
 				6355DDBD29D200F7004B1DF0 /* CameraFeedViewModel.swift in Sources */,
-				63EAE00529D2286C001866C2 /* ScreenCapture.swift in Sources */,
 				6353920E29D187D000EF9AD4 /* SpeechSynthesizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
