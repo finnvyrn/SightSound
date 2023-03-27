@@ -4,6 +4,15 @@ import AVFoundation
 class CameraFeedViewModel: NSObject, ObservableObject {
   
   private var requestHandler = VNSequenceRequestHandler()
+  @Published var previewLayer: AVCaptureVideoPreviewLayer?
+  
+  func startRunningCaptureSession() {
+      self.session.startRunning()
+  }
+
+  func stopRunningCaptureSession() {
+      self.session.stopRunning()
+  }
   
   func detectEyeLandmarks(sampleBuffer: CMSampleBuffer) {
       guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }

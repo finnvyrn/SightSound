@@ -24,15 +24,13 @@ struct CameraFeedView: View {
           #endif
       }
       .onAppear {
-          viewModel.configureCaptureSession()
+          viewModel.startRunningCaptureSession()
       }
       .onDisappear {
-          viewModel.stopCaptureSession()
+          viewModel.stopRunningCaptureSession()
       }
   }
 }
-
-
 
 #if os(iOS)
 struct CameraPreviewView_iOS: UIViewRepresentable {
