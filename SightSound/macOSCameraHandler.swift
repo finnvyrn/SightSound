@@ -10,13 +10,6 @@ class macOSCameraViewHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDele
         captureSession = AVCaptureSession()
         captureSession?.sessionPreset = .medium
         
-        /*
-        guard let frontCamera = AVCaptureDevice.defaultDevice(withMediaType: AVMediaType.video) else {
-            print("Unable to access front camera.")
-            return
-        }
-         */
-        
         guard let frontCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
             print("Unable to access front camera.")
             return
@@ -53,7 +46,8 @@ class macOSCameraViewHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDele
         previewLayer?.frame = view.bounds
         
         if let previewLayer = previewLayer {
-            view.layer?.addSublayer(previewLayer)
+            view.wantsLayer = true
+            view.layer = previewLayer
         }
         
         captureSession?.startRunning()

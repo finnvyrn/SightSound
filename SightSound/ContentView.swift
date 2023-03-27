@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  SightSound
-//
-//  Created by Ethan Quinn on 3/27/23.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -16,7 +9,6 @@ struct ContentView: View {
             macOSCameraView()
 #endif
         
-        /*
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
@@ -24,7 +16,7 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
-         */
+         
     }
 }
 

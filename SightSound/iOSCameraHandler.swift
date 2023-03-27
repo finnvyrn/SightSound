@@ -1,6 +1,6 @@
 #if os(iOS)
-import AVFoundation
 import UIKit
+import AVFoundation
 
 class iOSCameraViewHandler: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     private var captureSession: AVCaptureSession?

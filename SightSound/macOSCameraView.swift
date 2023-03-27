@@ -1,28 +1,22 @@
 #if os(macOS)
 import SwiftUI
-import AppKit
+import AVFoundation
 
-struct macOSCameraView: NSViewControllerRepresentable {
-    typealias NSViewControllerType = macOSCameraViewController
+struct macOSCameraView: NSViewRepresentable {
+    typealias NSViewType = NSView
 
-    func makeNSViewController(context: Context) -> macOSCameraViewController {
-        return macOSCameraViewController()
+    let cameraHandler = macOSCameraViewHandler()
+
+    func makeNSView(context: Context) -> NSView {
+        let nsView = NSView()
+        cameraHandler.startCaptureSession(in: nsView)
+        return nsView
     }
 
-    func updateNSViewController(_ nsViewController: macOSCameraViewController, context: Context) {
-    }
-}
-
-class macOSCameraViewController: NSViewController {
-    private let cameraHandler = macOSCameraViewHandler()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        cameraHandler.startCaptureSession(in: self.view)
+    func updateNSView(_ nsView: NSView, context: Context) {
     }
 
-    override func viewWillDisappear() {
-        super.viewWillDisappear()
+    func dismantleNSView(_ nsView: NSView, coordinator: ()) {
         cameraHandler.stopCaptureSession()
     }
 }
