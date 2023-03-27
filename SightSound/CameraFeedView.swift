@@ -1,6 +1,9 @@
 import SwiftUI
 import Vision
 import AVFoundation
+#if os(macoS)
+import AppKit
+#endif
 
 struct CameraFeedView: View {
   @ObservedObject private var viewModel = CameraFeedViewModel()
@@ -48,11 +51,7 @@ struct CameraPreviewView_iOS: UIViewRepresentable {
         previewLayer.frame = uiView.bounds
     }
 }
-#endif
-
-#if os(macOS)
-import AppKit
-
+#elseif os(macOS)
 struct CameraPreviewView_macOS: NSViewRepresentable {
     let previewLayer: AVCaptureVideoPreviewLayer
 

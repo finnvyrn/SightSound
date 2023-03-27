@@ -1,4 +1,10 @@
 import Vision
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 
 private func gazePoint(fromEyeLandmarks landmarks: VNFaceLandmarks2D) -> CGPoint? {
     guard let leftEye = landmarks.leftEye, let rightEye = landmarks.rightEye else { return nil }
@@ -21,13 +27,15 @@ private func averagePoint(points: [CGPoint]) -> CGPoint {
 }
 
 
-#if os(iOS)
-//import UIKit
-import SwiftUI
-
 private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize) -> CGPoint {
+    #if os(iOS)
     let screenWidth = UIScreen.main.bounds.size.width
     let screenHeight = UIScreen.main.bounds.size.height
+    #elseif os(macOS)
+    let screenWidth = NSScreen.main?.frame.width ?? 0
+    let screenHeight = NSScreen.main?.frame.height ?? 0
+    #endif
+
     
     let gazeX = gazePoint.x * screenWidth
     let gazeY = screenHeight - gazePoint.y * screenHeight
@@ -51,14 +59,28 @@ func detectText(at gazePoint: CGPoint) {
    */
   
   
-  let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
-  let screenShot = renderer.image { context in
-      guard let window = UIApplication.shared.windows.first else {
-          // handle error if window is nil
-          return
+    #if os(iOS)
+      let renderer = UIGraphicsImageRenderer(bounds: UIScreen.main.bounds)
+      let screenShot = renderer.image { context in
+          guard let window = UIApplication.shared.windows.first else {
+              // handle error if window is nil
+              return
+          }
+          window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
       }
-      window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
-  }
+    #elseif os(macOS)
+      let screenRect = NSScreen.main?.frame ?? CGRect.zero
+      let bitmapRep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(screenRect.size.width), pixelsHigh: Int(screenRect.size.height), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+      let graphicsContext = NSGraphicsContext(bitmapImageRep: bitmapRep)
+      NSGraphicsContext.saveGraphicsState()
+      NSGraphicsContext.current = graphicsContext
+      NSApp.keyWindow?.contentView?.display(screenRect)
+      let screenShot = NSImage(size: screenRect.size)
+      screenShot.addRepresentation(bitmapRep)
+      NSGraphicsContext.restoreGraphicsState()
+    #endif
+
+  
 
   // Get the size of the image
   let screenShotSize = screenShot.size
@@ -84,7 +106,7 @@ func detectText(at gazePoint: CGPoint) {
       }
   }
   
-  let handler = VNImageRequestHandler(cgImage: screenShot.cgImage!, options: [:])
+  let handler = VNImageRequestHandler(cgImage: screenShot.cgImage as! CGImage, options: [:])
   
   do {
     try handler.perform([textDetectionRequest])
@@ -92,7 +114,6 @@ func detectText(at gazePoint: CGPoint) {
     print("Failed to perform text detection: (error)")
   }
 }
-#endif
 
 
 private func handleDetectedFace(request: VNRequest, error: Error?) {
