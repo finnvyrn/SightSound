@@ -7,6 +7,7 @@ import UIKit
 import AppKit
 #endif
 
+
 class GazeTracker: NSObject, ObservableObject {
   private func gazePoint(fromEyeLandmarks landmarks: VNFaceLandmarks2D) -> CGPoint? {
     guard let leftEye = landmarks.leftEye, let rightEye = landmarks.rightEye else { return nil }
@@ -47,7 +48,6 @@ class GazeTracker: NSObject, ObservableObject {
   
   func detectText(at gazePoint: CGPoint) {
     // Capture a screenshot of the current screen
-    
     
     /*
      //guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
@@ -299,3 +299,125 @@ struct CameraPreview: NSViewRepresentable {
     }
 }
 #endif
+
+
+
+/*
+import AVFoundation
+import Vision
+
+class GazeTracker: NSObject, ObservableObject {
+    let captureSession = AVCaptureSession()
+    private let eyeLandmarksRequest = VNDetectFaceLandmarksRequest()
+    private let textDetectionRequest = VNDetectTextRectanglesRequest()
+    
+    @Published var gazePointInScreen: CGPoint = .zero
+    
+    override init() {
+        super.init()
+        
+        // Set up the capture session
+        captureSession.sessionPreset = .high
+        guard let videoDevice = AVCaptureDevice.default(for: .video) else {
+            return
+        }
+        guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice),
+              captureSession.canAddInput(videoDeviceInput) else {
+            return
+        }
+        captureSession.addInput(videoDeviceInput)
+        
+        // Set up the video data output
+        let videoDataOutput = AVCaptureVideoDataOutput()
+        videoDataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+        videoDataOutput.alwaysDiscardsLateVideoFrames = true
+        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        captureSession.addOutput(videoDataOutput)
+        
+
+      // Configure the face landmarks request
+      #if os(macOS)
+          eyeLandmarksRequest.revision = VNFaceLandmarksRequestRevision2
+      #elseif os(iOS)
+          eyeLandmarksRequest.revision = VNRequestRevision2
+      #endif
+        // Configure the text detection request
+        textDetectionRequest.reportCharacterBoxes = true
+    }
+    
+    func startCapture() {
+        if !captureSession.isRunning {
+            captureSession.startRunning()
+        }
+    }
+    
+    func stopCapture() {
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
+    }
+}
+
+extension GazeTracker: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // Convert the sample buffer to a CVPixelBuffer
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        
+        // Create a VNImageRequestHandler and perform the face landmarks request
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+        do {
+            try handler.perform([eyeLandmarksRequest])
+            try handler.perform([textDetectionRequest])
+        } catch {
+            print("Unable to perform face landmarks request: \(error.localizedDescription)")
+        }
+        
+        // Get the first detected face
+        guard let observation = eyeLandmarksRequest.results?.first as? VNFaceObservation else {
+            return
+        }
+        
+        // Get the bounding box of the face
+        let faceBoundingBox = observation.boundingBox
+        
+        // Get the size of the screen
+        guard let screenSize = NSScreen.main?.frame.size else {
+            return
+        }
+        
+        // Convert the bounding box to screen coordinates
+        let boundingBoxInScreen = CGRect(x: faceBoundingBox.origin.x * screenSize.width,
+                                          y: (1 - faceBoundingBox.origin.y - faceBoundingBox.size.height) * screenSize.height,
+                                          width: faceBoundingBox.size.width * screenSize.width,
+                                          height: faceBoundingBox.size.height * screenSize.height)
+        
+        // Update the gaze point in screen coordinates
+        DispatchQueue.main.async {
+            self.gazePointInScreen = CGPoint(x: boundingBoxInScreen.midX, y: boundingBoxInScreen.midY)
+        }
+    }
+}
+
+struct CameraPreview: NSViewRepresentable {
+  @ObservedObject var gazeTracker: GazeTracker
+  
+  func makeNSView(context: Context) -> NSView {
+    // Create the AVCaptureVideoPreviewLayer
+    let previewLayer = AVCaptureVideoPreviewLayer(sessionWithNoConnection: gazeTracker.captureSession)
+    previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+    // Create a NSView to contain the preview layer
+    let previewView = NSView(frame: NSRect(x: 0, y: 0, width: NSScreen.main?.frame.width ?? 0, height: NSScreen.main?.frame.height ?? 0))
+    previewLayer.frame = previewView.layer?.bounds ?? .zero
+    previewView.layer?.addSublayer(previewLayer)
+    
+    return previewView
+  }
+  
+  func updateNSView(_ nsView: NSView, context: Context) {
+    // Start capturing the video and tracking the user's gaze
+    gazeTracker.startCapture()
+  }
+}
+*/
