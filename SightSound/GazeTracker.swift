@@ -114,30 +114,56 @@ class GazeTracker: NSObject, ObservableObject {
     }
   }
   
-  private func handleDetectedFace(request: VNRequest, error: Error?) {
-    guard let results = request.results as? [VNFaceObservation] else {
-      print("No face detected.")
-      return
-    }
-    
-    guard let face = results.first, let landmarks = face.landmarks else {
-      print("No face landmarks detected.")
-      return
-    }
-    
-    guard let gazePoint = gazePoint(fromEyeLandmarks: landmarks) else {
-      print("Failed to calculate gaze point.")
-      return
-    }
-    
-    let imageSize = CGSize(width: face.boundingBox.width, height: face.boundingBox.height)
-    let gazePointInScreen = gazePointInScreenCoordinates(gazePoint: gazePoint, imageSize: imageSize)
-    
-    print("Gaze point in screen coordinates: \(gazePointInScreen)")
-    
-    // Detect and read text at the gaze point
-    detectText(at: gazePointInScreen)
+  func handleDetectedFace(request: VNRequest, error: Error?) {
+      // Get the first detected face
+      guard let observation = request.results?.first as? VNFaceObservation else {
+          return
+      }
+      
+      // Get the bounding box of the face
+      let faceBoundingBox = observation.boundingBox
+      
+      // Get the size of the screen
+      guard let screenSize = NSScreen.main?.frame.size else {
+          return
+      }
+      
+      // Convert the bounding box to screen coordinates
+      let boundingBoxInScreen = CGRect(x: faceBoundingBox.origin.x * screenSize.width,
+                                        y: (1 - faceBoundingBox.origin.y - faceBoundingBox.size.height) * screenSize.height,
+                                        width: faceBoundingBox.size.width * screenSize.width,
+                                        height: faceBoundingBox.size.height * screenSize.height)
+      
+      // Capture a screenshot of the screen
+      let renderer = UIGraphicsImageRenderer(bounds: CGRect(origin: .zero, size: screenSize))
+      let screenShot = renderer.image { context in
+          guard let window = NSApp.windows.first else {
+              // handle error if window is nil
+              return
+          }
+          window.contentView?.drawHierarchy(in: window.contentView!.bounds, afterScreenUpdates: true)
+      }
+      
+      // Convert the screenshot to a CGImage and create a VNImageRequestHandler
+      guard let cgImage = screenShot.cgImage else {
+          return
+      }
+      let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+      
+      // Create a VNDetectTextRectanglesRequest and perform the text detection
+      let textDetectionRequest = VNDetectTextRectanglesRequest(completionHandler: handleDetectedText)
+      do {
+          try handler.perform([textDetectionRequest])
+      } catch {
+          print("Unable to perform text detection: \(error.localizedDescription)")
+      }
+      
+      // Update the gaze point in screen coordinates
+      DispatchQueue.main.async {
+          self.gazePointInScreen = CGPoint(x: boundingBoxInScreen.midX, y: boundingBoxInScreen.midY)
+      }
   }
+
   
   // --------------------------------------------------------------------- //
   
@@ -257,7 +283,7 @@ struct CameraPreview: NSViewRepresentable {
     
     func makeNSView(context: Context) -> NSView {
         // Create the AVCaptureVideoPreviewLayer
-      let previewLayer = AVCaptureVideoPreviewLayer(sessionWithNoConnection: gazeTracker.captureSession!)
+      let previewLayer = AVCaptureVideoPreviewLayer(sessionWithNoConnection: gazeTracker.captureSession ?? AVCaptureSession())
         previewLayer.videoGravity = .resizeAspectFill
         
         // Create an NSView to contain the preview layer
