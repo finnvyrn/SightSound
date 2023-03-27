@@ -131,7 +131,11 @@ class GazeTracker: NSObject {
     // Extract gaze points and perform necessary gaze tracking logic
     // ...
   }
+  
 }
+
+
+// GPT-4 Starts
 
 #if os(iOS)
   extension GazeTracker: ARSCNViewDelegate {
