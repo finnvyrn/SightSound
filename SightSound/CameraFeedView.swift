@@ -3,34 +3,36 @@ import Vision
 import AVFoundation
 
 struct CameraFeedView: View {
-    @ObservedObject private var viewModel = CameraFeedViewModel()
-    
-    var body: some View {
+  @ObservedObject private var viewModel = CameraFeedViewModel()
+  
+  var body: some View {
       VStack {
-#if os(iOS)
-        if let previewLayer = viewModel.previewLayer {
-          CameraPreviewView_iOS(previewLayer: previewLayer)
-            .edgesIgnoringSafeArea(.all)
-        } else {
-          Text("Camera not available")
-        }
-#elseif os(macOS)
-        if let previewLayer = viewModel.previewLayer {
-          CameraPreviewView_macOS(previewLayer: previewLayer)
-            .edgesIgnoringSafeArea(.all)
-        } else {
-          Text("Camera not available")
-        }
-#endif
+          #if os(iOS)
+          if let previewLayer = viewModel.previewLayer {
+              CameraPreviewView_iOS(previewLayer: previewLayer)
+                  .edgesIgnoringSafeArea(.all)
+          } else {
+              Text("Camera not available")
+          }
+          #elseif os(macOS)
+          if let previewLayer = viewModel.previewLayer {
+              CameraPreviewView_macOS(previewLayer: previewLayer)
+                  .edgesIgnoringSafeArea(.all)
+          } else {
+              Text("Camera not available")
+          }
+          #endif
       }
-        .onAppear {
-            viewModel.configureCaptureSession()
-        }
-        .onDisappear {
-            viewModel.stopCaptureSession()
-        }
-    }
+      .onAppear {
+          viewModel.configureCaptureSession()
+      }
+      .onDisappear {
+          viewModel.stopCaptureSession()
+      }
+  }
 }
+
+
 
 #if os(iOS)
 struct CameraPreviewView_iOS: UIViewRepresentable {
