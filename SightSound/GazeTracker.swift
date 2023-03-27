@@ -30,14 +30,9 @@ private func averagePoint(points: [CGPoint]) -> CGPoint {
 }
 
 private func gazePointInScreenCoordinates(gazePoint: CGPoint, imageSize: CGSize) -> CGPoint {
-
-  #if os(iOS)
-    let screenWidth = UIScreen.main.bounds.size.width
-    let screenHeight = UIScreen.main.bounds.size.height
-  #elseif os(macOS)
-    let screenWidth = NSScreen.main?.frame.size.width ?? 0
-    let screenHeight = NSScreen.main?.frame.size.height ?? 0
-  #endif
+  let screenSize = getScreenSize()
+  let screenWidth = screenSize.width
+  let screenHeight = screenSize.height
 
   let gazeX = gazePoint.x * screenWidth
   let gazeY = screenHeight - gazePoint.y * screenHeight
@@ -72,21 +67,15 @@ private func handleDetectedFace(request: VNRequest, error: Error?) {
 
 func detectText(at gazePoint: CGPoint) {
   // Capture a screenshot of the current screen
-  #if os(iOS)
-    guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
-      print("Failed to capture a screenshot.")
-      return
-    }
-  #elseif os(macOS)
-    guard let screenShot = NSApplication.shared.keyWindow?.snapshot() else {
-      print("Failed to capture a screenshot.")
-      return
-    }
-  #endif
+
+  guard let screenShot = captureScreenshot() else {
+    print("Failed to capture a screenshot.")
+    return
+  }
 
   // Convert the NSImage to a CGImage
-  guard let cgImage = screenShot.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-    print("Failed to convert NSImage to CGImage.")
+  guard let cgImage = captureScreenshot() else {
+    print("Failed to capture a screenshot.")
     return
   }
 
@@ -118,6 +107,33 @@ func detectText(at gazePoint: CGPoint) {
   }
 }
 
+func getScreenSize() -> CGSize {
+  #if os(macOS)
+    let screenWidth = NSScreen.main?.frame.size.width ?? 0
+    let screenHeight = NSScreen.main?.frame.size.height ?? 0
+  #elseif os(iOS)
+    let screenWidth = UIScreen.main.bounds.size.width
+    let screenHeight = UIScreen.main.bounds.size.height
+  #endif
+  return CGSize(width: screenWidth, height: screenHeight)
+}
+
+func captureScreenshot() -> CGImage? {
+  #if os(macOS)
+    guard let screenShot = NSApplication.shared.keyWindow?.snapshot(),
+      let cgImage = screenShot.cgImage(forProposedRect: nil, context: nil, hints: nil)
+    else {
+      return nil
+    }
+  #elseif os(iOS)
+    guard let screenShot = UIApplication.shared.windows.first?.snapshot() else {
+      return nil
+    }
+    let cgImage = screenShot.cgImage!
+  #endif
+  return cgImage
+}
+
 #if os(macOS)
   extension NSWindow {
     func snapshot() -> NSImage? {
@@ -126,6 +142,15 @@ func detectText(at gazePoint: CGPoint) {
       let bitmapRep = contentView.bitmapImageRepForCachingDisplay(in: bounds)
       contentView.cacheDisplay(in: bounds, to: bitmapRep!)
       return NSImage(cgImage: bitmapRep!.cgImage!, size: bounds.size)
+    }
+  }
+#elseif os(iOS)
+  extension UIWindow {
+    func snapshot() -> UIImage {
+      let renderer = UIGraphicsImageRenderer(bounds: bounds)
+      return renderer.image { _ in
+        drawHierarchy(in: bounds, afterScreenUpdates: true)
+      }
     }
   }
 #endif
