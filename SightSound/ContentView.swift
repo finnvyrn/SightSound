@@ -9,6 +9,12 @@ struct ContentView: View {
       macOSCameraView()
     #endif
 
+    Text("Eye Gaze Detection")
+        .font(.largeTitle)
+        .padding()
+    
+    CameraFeedView()
+    
     VStack {
       Image(systemName: "globe")
         .imageScale(.large)
