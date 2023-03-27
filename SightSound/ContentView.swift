@@ -9,6 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
+        
+#if os(iOS)
+            iOSCameraView()
+#elseif os(macOS)
+            macOSCameraView()
+#endif
+        
+        /*
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
@@ -16,6 +24,7 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
+         */
     }
 }
 

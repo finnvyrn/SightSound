@@ -6,7 +6,7 @@
 	<integer>10</integer>
 	<key>logs</key>
 	<dict>
-		<key>6489FDC2-187D-45A9-98C4-68A3A5577D94</key>
+		<key>695FB36E-49C0-4940-9D0A-FB9E66F95F96</key>
 		<dict>
 			<key>className</key>
 			<string>IDEActivityLogSection</string>
@@ -15,7 +15,35 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>6489FDC2-187D-45A9-98C4-68A3A5577D94.xcactivitylog</string>
+			<string>695FB36E-49C0-4940-9D0A-FB9E66F95F96.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>signature</key>
+			<string>eyJibHVlcHJpbnRfYmx1ZXByaW50VmFyaWFudCI6eyJnZW5lcmljIjp7fX0sImJsdWVwcmludF9wcm92aWRlckZpbGVQYXRoU3RyaW5nIjoiXC9Vc2Vyc1wvZXRoYW5xdWlublwvY3VycmVudFwveGNvZGVcL1NpZ2h0U291bmRcL1NpZ2h0U291bmQueGNvZGVwcm9qIiwidHlwZSI6eyJibHVlcHJpbnQiOnt9fSwiYmx1ZXByaW50X2JsdWVwcmludElkZW50aWZpZXIiOiI2MzVDNERDMzI5RDBFQzlGMDBCRUJENUIifQ==</string>
+			<key>timeStartedRecording</key>
+			<real>701606303.73122895</real>
+			<key>timeStoppedRecording</key>
+			<real>63113904000</real>
+			<key>title</key>
+			<string>Build SightSound</string>
+			<key>uniqueIdentifier</key>
+			<string>695FB36E-49C0-4940-9D0A-FB9E66F95F96</string>
+		</dict>
+		<key>E8A71968-B1EF-4171-B677-708F63A78EF2</key>
+		<dict>
+			<key>className</key>
+			<string>IDEActivityLogSection</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>E8A71968-B1EF-4171-B677-708F63A78EF2.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -26,13 +54,41 @@
 			<key>signature</key>
 			<string>eyJ0eXBlIjp7ImJsdWVwcmludFByb3ZpZGVyIjp7fX0sImJsdWVwcmludFByb3ZpZGVyX3Byb3ZpZGVyRmlsZVBhdGhTdHJpbmciOiJcL1VzZXJzXC9ldGhhbnF1aW5uXC9jdXJyZW50XC94Y29kZVwvU2lnaHRTb3VuZFwvU2lnaHRTb3VuZC54Y29kZXByb2oifQ==</string>
 			<key>timeStartedRecording</key>
-			<real>701557923.47860599</real>
+			<real>701606303.73122895</real>
 			<key>timeStoppedRecording</key>
 			<real>63113904000</real>
 			<key>title</key>
-			<string>Build for Previews SightSound</string>
+			<string>Build SightSound</string>
 			<key>uniqueIdentifier</key>
-			<string>6489FDC2-187D-45A9-98C4-68A3A5577D94</string>
+			<string>E8A71968-B1EF-4171-B677-708F63A78EF2</string>
+		</dict>
+		<key>EF7485D3-74AB-498B-AABC-B1DFFB0EDC3B</key>
+		<dict>
+			<key>className</key>
+			<string>IDEActivityLogSection</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>EF7485D3-74AB-498B-AABC-B1DFFB0EDC3B.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>signature</key>
+			<string>eyJ0eXBlIjp7ImJ1aWxkU3lzdGVtVGFzayI6e319LCJidWlsZFN5c3RlbVRhc2tfYnVpbGRUYXNrIjoiUHJlcGFyZSBidWlsZCJ9</string>
+			<key>timeStartedRecording</key>
+			<real>701606303.73122895</real>
+			<key>timeStoppedRecording</key>
+			<real>63113904000</real>
+			<key>title</key>
+			<string>Build SightSound</string>
+			<key>uniqueIdentifier</key>
+			<string>EF7485D3-74AB-498B-AABC-B1DFFB0EDC3B</string>
 		</dict>
 	</dict>
 </dict>
